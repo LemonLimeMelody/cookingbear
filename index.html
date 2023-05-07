@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko" data-dark="false">
+    <head>
+        <meta charset="utf-8">
+        <title>cookingbear</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <meta http-equiv="X-UA-Compatible" content="IE-edge">
+        <meta name="description" content="cookingbear">
+        <meta name="robotos" content="noindex, nofollow">
+        <link rel="stylesheet" href="CSS/chat-room.css">
+        <link rel="stylesheet" href="CSS/general.css">
+        <link rel="stylesheet" href="CSS/intro.css">
+        <link rel="stylesheet" href="fontello/css/fontello.css">
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
+        integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    </head>
+    <body>
+        <div id="intro" class="intro-container">
+            <h2>환영합니다!</h2>
+            <p>요리에 익숙하지 않으시다면!</p>
+            <p>요리에 재미를 붙이고 싶으시다면!</p>
+            <p>냉장고를 열어 가지고 있는 요리 재료를 알려주세요!</p>
+            <p>당신의 재료로 쉽고 맛있는 요리를 추천해드립니다!</p>
+            <p>요리하는 곰에게 맡겨주세요!</p>
+            <button id="btn" onclick="start()">냉장고 열어보기</button>
+            <p></p>
+            <p></p>
+            <p>제주대학교 전산통계학과 학생 5명이 모여 제작한 첫 프로젝트입니다.</p>
+            <p>단기 프로젝트로 계획했기 때문에 이 서비스는 2023년 6월 30일 까지만 운영됩니다</p>
+            <p></p>
+        </div> 
+        <div id="chat-body" style="display: none;">
+            <!-- 프로필 -->
+            <header>
+                <img class="profile-img" src="./pic/cbe.png" alt="요리하는곰프로필사진">
+                <div class="profile-col">
+                    <span class="profile-name">요리하는 곰</span>
+                    <span class="profile-status">접속중</span>
+                </div>
+            </header>
+            <main>
+                <div class="notice-bar">
+                    <i class="icon-bullhorn"></i>
+                    <span>요리하는 곰이 당신을 위한 레시피를 추천해드립니다.</span>
+                    <i class="icon-down-open-big"></i>
+                </div>
+                <div class="chat-container" >
+                    <div class="status-line">
+                        <span>상태: 배고픔</span>
+                    </div>
+                    <div class="main-chat">
+                        <div class="cookingbear-chat">
+                            <img class="profile-img" src="./pic/cbe.png" alt="요리하는곰프로필사진">
+                            <div class="cookingbear-chat-col">
+                                <span class="profile-name">요리하는 곰</span>
+                                <span class="balloon">냉장고에 어떤게 있을까요?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 채팅 입력창 -->
+                <div id="loader" class="loader" style="display: none;">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="당신이 가진 모든 요리 재료를 입력해주세요.">
+                    <button id="btn" onclick="spinner()">Send</button>
+                </div>
+            </main>
+<!--    <div class="kakao-ad">
+        <ins class="kakao_ad_area" style="display:none;" data-ad-unit="????" data-ad-width="320"
+            data-ad-height="100"></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+    </div> 
+-->
+    <script>
+        const chatBox = document.querySelector('.main-chat');
+        let userMessages = [];
+        let assistantMessages = [];
+        function spinner() {
+            document.getElementById('loader').style.display = "block";
+        }
+        function start() {
+            document.getElementById("intro").style.display = "none";
+            document.getElementById("chat-body").style.display = "grid";
+        }
+        const sendMessage = async () => {
+            const chatInput = document.querySelector('.chat-input input');
+            
+            
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("user-chat");
+            const userMessageCol = document.createElement("div");
+            userMessageCol.classList.add("user-chat-col");
+            const userMessageballoon = document.createElement("span");
+            userMessageballoon.classList.add("balloon");
+            userMessageballoon.innerHTML = `${chatInput.value}`;
+            userMessageCol.appendChild(userMessageballoon);
+            userMessage.appendChild(userMessageCol);
+            chatBox.appendChild(userMessage);
+
+            //userMessage 메세지 추가
+            userMessages.push(chatInput.value);
+
+            chatInput.value = '';
+
+            const response = await fetch('https://mh5p8p5gl9.execute-api.ap-northeast-2.amazonaws.com/cookingTell', {
+                method: 'POST',
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userMessages: userMessages,
+                    assitantMessages: assistantMessages,
+                })
+            });
+            const data = await response.json();
+            document.getElementById('loader').style.display = "none";
+            
+            //assistantMessage 메세지 추가
+            assistantMessages.push(data.assistant);
+
+            
+            const cookingbearMessage = document.createElement('div');
+            cookingbearMessage.classList.add('cookingbear-chat');
+            const profileImg = document.createElement("img");
+            profileImg.classList.add("profile-img");
+            profileImg.src = "./pic/cbe.png";
+            profileImg.alt = "요리하는곰프로필사진";
+            cookingbearMessage.appendChild(profileImg);
+            const cookingbearMassageCol = document.createElement("div");
+            cookingbearMassageCol.classList.add("cookingbear-chat-col");
+            const profileName = document.createElement("span");
+            profileName.classList.add("profile-name");
+            profileName.textContent = "요리하는 곰";
+            cookingbearMassageCol.appendChild(profileName);
+            const cookingbearballoon = document.createElement("span");
+            cookingbearballoon.classList.add("balloon");
+            cookingbearballoon.innerHTML = `${data.assistant}`;
+            cookingbearMassageCol.appendChild(cookingbearballoon);
+            cookingbearMessage.appendChild(cookingbearMassageCol);
+            const p = document.createElement('p');
+            p.innerHTML = '링크를 눌러 닉네임과 함께 저희 팀의 도전을 응원해주시면 감사하겠습니다. => ';
+            p.classList.add("assistant");
+            const link = document.createElement('a');
+            link.href = "https://www.naver.com";
+            link.innerText = "후기 써주기";
+            p.appendChild(link);
+            cookingbearMessage.appendChild(p);
+            "<p> <a href='https://www.naver.com'>후기 써주기</a></p>";
+            chatBox.appendChild(cookingbearMessage);
+        };
+
+        document.querySelector('.chat-input button').addEventListener('click', sendMessage);
+        </script>
+    </body>
+    
+</html>
